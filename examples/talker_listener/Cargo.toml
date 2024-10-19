@@ -1,0 +1,30 @@
+[workspace]
+members = ["nodes/talker", "nodes/listener"]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+description = ""
+edition = "2021"
+documentation = ""
+license = "Apache-2.0"
+repository = "https://github.com/Hennzau/narr"
+
+[workspace.dependencies]
+
+[[machine]]
+label = "local"
+address = "127.0.0.1:6446"
+working_directory = "/home/enzo/Downloads/talker_listener"
+
+[[node]]
+id = "talker"
+machine = "local"
+inputs = []
+outputs = ["message"]
+
+[[node]]
+id = "listener"
+machine = "local"
+inputs = ["talker/message"]
+outputs = []

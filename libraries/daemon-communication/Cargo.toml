@@ -1,0 +1,10 @@
+[package]
+name = "narr-daemon-communication"
+version.workspace = true
+description.workspace = true
+edition.workspace = true
+documentation.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
