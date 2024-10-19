@@ -1,0 +1,37 @@
+[workspace]
+members = [
+    "apis/python",
+    "apis/rust",
+
+    "binaries/cli",
+    "binaries/tui",
+    "libraries/core",
+
+    "libraries/daemon",
+    "libraries/parser",
+]
+resolver = "2"
+
+[workspace.package]
+version = "0.1.0"
+description = ""
+edition = "2021"
+documentation = ""
+license = "Apache-2.0"
+repository = ""
+
+[workspace.dependencies]
+dpoc-daemon = { path = "libraries/daemon" }
+dpoc-parser = { path = "libraries/parser" }
+dpoc-core = { path = "libraries/core" }
+
+dpoc-rs = { path = "apis/rust" }
+
+eyre = "0.6"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+tokio = { version = "1", features = ["full"] }
+zenoh = { version = "1", features = ["unstable", "internal", "shared-memory"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+bincode = "1.3"

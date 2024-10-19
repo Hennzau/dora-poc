@@ -1,0 +1,18 @@
+[package]
+name = "dpoc-rs"
+version.workspace = true
+description.workspace = true
+edition.workspace = true
+documentation.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+eyre = { workspace = true }
+tokio = { workspace = true }
+
+tracing = { workspace = true }
+
+dpoc-daemon = { workspace = true }
+dpoc-parser = { workspace = true }
+dpoc-core = { workspace = true }

@@ -1,0 +1,18 @@
+[package]
+name = "dpoc-tui"
+version.workspace = true
+description.workspace = true
+edition.workspace = true
+documentation.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+eyre = { workspace = true }
+tokio = { workspace = true }
+
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+
+dpoc-rs = { workspace = true }
+ratatui = "0.29.0"

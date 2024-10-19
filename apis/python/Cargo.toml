@@ -1,0 +1,16 @@
+[package]
+name = "dpoc-py"
+version.workspace = true
+description.workspace = true
+edition.workspace = true
+documentation.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+eyre = { workspace = true }
+tokio = { workspace = true }
+
+tracing = { workspace = true }
+
+dpoc-rs = { workspace = true }
