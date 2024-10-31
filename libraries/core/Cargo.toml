@@ -1,5 +1,5 @@
 [package]
-name = "narr-daemon"
+name = "narr-core"
 version.workspace = true
 description.workspace = true
 edition.workspace = true
@@ -12,6 +12,3 @@ eyre = { workspace = true }
 tokio = { workspace = true }
 
 tracing = { workspace = true }
-
-narr-daemon-communication = { workspace = true }
-narr-node-communication = { workspace = true }

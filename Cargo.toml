@@ -5,6 +5,7 @@ members = [
 
     "binaries/cli",
     "binaries/tui",
+    "libraries/core",
 
     "libraries/daemon",
     "libraries/daemon-communication",
@@ -26,6 +27,15 @@ narr-daemon = { path = "libraries/daemon" }
 narr-daemon-communication = { path = "libraries/daemon-communication" }
 narr-node-communication = { path = "libraries/node-communication" }
 narr-parser = { path = "libraries/parser" }
+narr-core = { path = "libraries/core" }
+
+narr-rs = { path = "apis/rust" }
+
+eyre = "0.6"
+tracing = "0.1"
+tracing-subscriber = "0.3"
+tokio = { version = "1", features = ["full"] }
+zenoh = { version = "1.0.0", features = ["internal", "shared-memory"] }
 
 [workspace.metadata.dist]
 cargo-dist-version = "0.22.1"

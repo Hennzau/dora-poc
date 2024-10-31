@@ -8,3 +8,9 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+eyre = { workspace = true }
+tokio = { workspace = true }
+
+tracing = { workspace = true }
+
+narr-rs = { workspace = true }
