@@ -11,5 +11,6 @@ repository.workspace = true
 eyre = { workspace = true }
 tokio = { workspace = true }
 zenoh = { workspace = true }
+zerocopy = { workspace = true }
 
 tracing = { workspace = true }
