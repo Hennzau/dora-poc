@@ -12,9 +12,12 @@ repository = "https://github.com/Hennzau/narr"
 
 [workspace.dependencies]
 
+[narr]
+name = "MyApplication"
+
 [[machine]]
-label = "local"
-address = "127.0.0.1:6446"
+name = "local"
+address = "udp/127.0.0.1:6446"
 working_directory = "/home/enzo/Downloads/talker_listener"
 
 [[node]]
