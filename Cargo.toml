@@ -40,7 +40,7 @@ zenoh = { version = "1.0.1", features = [
     "internal",
     "shared-memory",
 ] }
-zerocopy = "0.8"
+rkyv = "0.8.8"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]
