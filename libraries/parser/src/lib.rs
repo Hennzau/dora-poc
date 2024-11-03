@@ -7,7 +7,7 @@ use narr_core::{
     node::{inputs::NodeInputs, outputs::NodeOutputs, Node},
 };
 
-pub async fn parse_toml_to_application(path: PathBuf) -> eyre::Result<Application> {
+pub async fn read_toml_and_parse_to_application(path: PathBuf) -> eyre::Result<Application> {
     let contents = tokio::fs::read_to_string(path.clone()).await?;
     let contents_toml: toml::Value = toml::from_str(&contents)?;
 

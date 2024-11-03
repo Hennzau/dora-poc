@@ -15,3 +15,4 @@ tracing = { workspace = true }
 
 narr-daemon-communication = { workspace = true }
 narr-node-communication = { workspace = true }
+narr-core = { workspace = true }

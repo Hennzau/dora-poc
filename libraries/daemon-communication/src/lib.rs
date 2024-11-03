@@ -1,14 +1,28 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+pub type ListenAddress = String;
+
+pub struct DaemonCommunication {
+    pub session_config: zenoh::Config,
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+impl DaemonCommunication {
+    pub fn new() -> Self {
+        DaemonCommunication {
+            session_config: zenoh::Config::default(),
+        }
+    }
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
+    pub fn listen_to(self, listen_addresses: Vec<ListenAddress>) -> eyre::Result<Self> {
+        let mut config = self.session_config;
+
+        config
+            .insert_json5(
+                "listen/endpoints",
+                &serde_json::json!(listen_addresses).to_string(),
+            )
+            .map_err(|e| eyre::eyre!("Failed to insert listen addresses: {}", e))?;
+
+        Ok(DaemonCommunication {
+            session_config: config,
+        })
     }
 }

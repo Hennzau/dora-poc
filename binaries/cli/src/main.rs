@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
@@ -19,8 +21,8 @@ enum NarrCommands {
     )]
     Open {
         #[arg(
-            value_name = "Interface to listen on (default: 0.0.0.0:0)",
-            default_value = "0.0.0.0:0"
+            value_name = "Interface to listen on (default: udp/0.0.0.0:0)",
+            default_value = "udp/0.0.0.0:0"
         )]
         listen: Vec<String>,
     },
@@ -30,13 +32,13 @@ enum NarrCommands {
     )]
     Start {
         #[arg(value_name = "Path to Cargo.toml", default_value = "Cargo.toml")]
-        manifest_path: Option<String>,
+        manifest_path: PathBuf,
     },
 
     #[command(about = "Distribute the application to remote Daemons.")]
     Distribute {
         #[arg(value_name = "Path to Cargo.toml", default_value = "Cargo.toml")]
-        manifest_path: Option<String>,
+        manifest_path: PathBuf,
     },
 }
 
@@ -46,13 +48,25 @@ async fn main() -> eyre::Result<()> {
 
     match cli.command {
         NarrCommands::Open { listen } => {
-            println!("Opening daemon on {:?}", listen);
+            let daemon = narr_rs::prelude::Daemon::new_without_application(listen).await?;
+
+            daemon.run().await?;
         }
         NarrCommands::Start { manifest_path } => {
-            println!("Starting application with manifest {:?}", manifest_path);
+            let application =
+                narr_rs::prelude::read_toml_and_parse_to_application(manifest_path).await?;
+
+            let daemon = narr_rs::prelude::Daemon::new_with_application(application).await;
+
+            daemon.run().await?;
         }
         NarrCommands::Distribute { manifest_path } => {
-            println!("Distributing application with manifest {:?}", manifest_path);
+            let application =
+                narr_rs::prelude::read_toml_and_parse_to_application(manifest_path).await?;
+
+            let daemon = narr_rs::prelude::Daemon::new_with_application(application).await;
+
+            daemon.distribute().await?;
         }
     }
 
