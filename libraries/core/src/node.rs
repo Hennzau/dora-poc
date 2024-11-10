@@ -1,4 +1,4 @@
-use crate::daemon::{Daemon, DaemonLabel};
+use crate::daemon::Daemon;
 
 pub mod inputs;
 pub mod outputs;

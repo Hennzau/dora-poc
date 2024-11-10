@@ -5,7 +5,6 @@ use eyre::OptionExt;
 
 use narr_core::application::Application;
 use narr_core::daemon::address::DaemonAddress;
-use narr_core::daemon::DaemonLabel;
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]

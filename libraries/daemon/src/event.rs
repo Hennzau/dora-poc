@@ -1,4 +1,3 @@
-use eyre::bail;
 use rkyv::{util::AlignedVec, Archive, Deserialize, Serialize};
 
 pub enum DaemonEvent {}
