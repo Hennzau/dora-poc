@@ -20,6 +20,9 @@ enum NarrCommands {
         about = "Open a new daemon that will listen for incoming connections on specified interface."
     )]
     Open {
+        #[arg(value_name = "Daemon ID", required = true)]
+        daemon_id: String,
+
         #[arg(
             value_name = "Interface to listen on (default: udp/0.0.0.0:0)",
             default_value = "udp/0.0.0.0:0"
@@ -47,8 +50,9 @@ async fn main() -> eyre::Result<()> {
     let cli = NarrCLI::parse();
 
     match cli.command {
-        NarrCommands::Open { listen } => {
-            let daemon = narr_rs::prelude::Daemon::new_without_application(listen).await?;
+        NarrCommands::Open { daemon_id, listen } => {
+            let daemon =
+                narr_rs::prelude::Daemon::new_without_application(daemon_id, listen).await?;
 
             daemon.run().await?;
         }
@@ -56,7 +60,10 @@ async fn main() -> eyre::Result<()> {
             let application =
                 narr_rs::prelude::read_toml_and_parse_to_application(manifest_path).await?;
 
-            let daemon = narr_rs::prelude::Daemon::new_with_application(application).await;
+            let daemon_id = format!("DAEMON_{}", application.id);
+
+            let daemon =
+                narr_rs::prelude::Daemon::new_with_application(daemon_id, application).await?;
 
             daemon.run().await?;
         }
@@ -64,7 +71,10 @@ async fn main() -> eyre::Result<()> {
             let application =
                 narr_rs::prelude::read_toml_and_parse_to_application(manifest_path).await?;
 
-            let daemon = narr_rs::prelude::Daemon::new_with_application(application).await;
+            let daemon_id = format!("DAEMON_{}", application.id);
+
+            let daemon =
+                narr_rs::prelude::Daemon::new_with_application(daemon_id, application).await?;
 
             daemon.distribute().await?;
         }

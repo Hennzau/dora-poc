@@ -8,8 +8,6 @@ members = [
     "libraries/core",
 
     "libraries/daemon",
-    "libraries/daemon-communication",
-    "libraries/node-communication",
     "libraries/parser",
 ]
 resolver = "2"
@@ -24,8 +22,6 @@ repository = "https://github.com/Hennzau/narr"
 
 [workspace.dependencies]
 narr-daemon = { path = "libraries/daemon" }
-narr-daemon-communication = { path = "libraries/daemon-communication" }
-narr-node-communication = { path = "libraries/node-communication" }
 narr-parser = { path = "libraries/parser" }
 narr-core = { path = "libraries/core" }
 
