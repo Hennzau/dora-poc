@@ -1,133 +1,93 @@
+use std::collections::HashMap;
 use std::path::PathBuf;
 
 use eyre::OptionExt;
-use narr_core::{
-    application::Application,
-    daemon::{address::daemonAddress, Daemon},
-    node::{inputs::NodeInputs, outputs::NodeOutputs, Node},
-};
+
+use narr_core::application::Application;
+use narr_core::daemon::address::DaemonAddress;
+use narr_core::daemon::DaemonLabel;
+use serde::Deserialize;
+
+#[derive(Debug, Deserialize)]
+struct Config {
+    narr: Narr,
+}
+
+#[derive(Debug, Deserialize)]
+struct Narr {
+    name: String,
+    local: String,
+    working_directory: String,
+    remote: Option<Vec<Remote>>,
+    node: Vec<Node>,
+}
+
+#[derive(Debug, Deserialize)]
+struct Remote {
+    label: String,
+    endpoint: String,
+    working_directory: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct Node {
+    id: String,
+    #[serde(default)]
+    remote: Option<String>,
+    #[serde(default)]
+    build: Option<String>,
+    #[serde(default)]
+    distribute: Option<String>,
+    #[serde(default)]
+    run: Option<String>,
+    inputs: Vec<String>,
+    outputs: Vec<String>,
+}
 
 pub async fn read_toml_and_parse_to_application(path: PathBuf) -> eyre::Result<Application> {
     let contents = tokio::fs::read_to_string(path.clone()).await?;
-    let contents_toml: toml::Value = toml::from_str(&contents)?;
+    let contents_toml: Config = toml::from_str(&contents)?;
+    let narr = contents_toml.narr;
 
-    let metadata = contents_toml
-        .get("narr")
-        .ok_or_eyre(format!("Missing 'narr' key in {:?}", path))?;
+    let mut application = Application::new(narr.name);
 
-    let name = metadata
-        .get("name")
-        .ok_or_eyre(format!("Missing 'name' key in app metadata {:?}", path))?
-        .as_str()
-        .ok_or_eyre(format!("Invalid 'name' value in app metadata {:?}", path))?;
+    let local_daemon = narr_core::daemon::Daemon::new(
+        DaemonAddress::from_string(narr.local)?,
+        "LOCAL".to_string(),
+        PathBuf::from(narr.working_directory),
+    );
 
-    let id = rand::random::<u64>();
+    let mut remote_daemons = HashMap::new();
+    for remote in narr.remote.unwrap_or_default() {
+        let daemon = narr_core::daemon::Daemon::new(
+            DaemonAddress::from_string(remote.endpoint)?,
+            remote.label.clone(),
+            PathBuf::from(remote.working_directory),
+        );
 
-    let mut application = Application::new(format!("{}-{}", name, id));
-
-    let daemons = contents_toml
-        .get("daemon")
-        .ok_or_eyre(format!("Missing 'daemon' key in {:?}", path))?;
-
-    let nodes = contents_toml
-        .get("node")
-        .ok_or_eyre(format!("Missing 'node' key in {:?}", path))?;
-
-    for daemon in daemons
-        .as_array()
-        .ok_or_eyre(format!("Invalid 'daemon' value in {:?}", path))?
-    {
-        let name = daemon
-            .get("name")
-            .ok_or_eyre("Missing 'name' key in daemon")?
-            .as_str()
-            .ok_or_eyre("Invalid 'name' value in daemon")?
-            .to_string();
-
-        let address = daemon
-            .get("address")
-            .ok_or_eyre(format!("Missing 'address' key in daemon {}", name))?
-            .as_str()
-            .ok_or_eyre(format!("Invalid 'address' value in daemon {}", name))?;
-
-        let address = daemonAddress::from_string(address.to_string())?;
-
-        let working_dir = daemon
-            .get("working_directory")
-            .ok_or_eyre(format!(
-                "Missing 'working_directory' key in daemon {}",
-                name
-            ))?
-            .as_str()
-            .ok_or_eyre(format!(
-                "Invalid 'working_directory' value in daemon {}",
-                name
-            ))?;
-
-        let working_dir = PathBuf::from(working_dir);
-
-        application.add_daemon(Daemon::new(address, name, working_dir));
+        application.add_daemon(daemon.clone());
+        remote_daemons.insert(remote.label, daemon);
     }
 
-    for node in nodes
-        .as_array()
-        .ok_or_eyre(format!("Invalid 'node' value in {:?}", path))?
-    {
-        let id = node
-            .get("id")
-            .ok_or_eyre("Missing 'id' key in node")?
-            .as_str()
-            .ok_or_eyre("Invalid 'id' value in node")?
-            .to_string();
+    application.add_daemon(local_daemon.clone());
 
-        let daemon_name = node
-            .get("daemon")
-            .ok_or_eyre(format!("Missing 'daemon' key in node {}", id))?
-            .as_str()
-            .ok_or_eyre(format!("Invalid 'daemon' value in node {}", id))?
-            .to_string();
+    for node in narr.node {
+        let daemon = match node.remote {
+            Some(remote) => remote_daemons
+                .get(&remote)
+                .cloned()
+                .ok_or_eyre(eyre::eyre!("Remote daemon not found"))?,
+            None => local_daemon.clone(),
+        };
 
-        let daemon = application
-            .daemons
-            .get(&daemon_name)
-            .ok_or_eyre(format!("daemon {} not found", daemon_name))?;
+        let node = narr_core::node::Node {
+            id: node.id,
+            daemon,
+            inputs: narr_core::node::inputs::NodeInputs { ids: node.inputs },
+            outputs: narr_core::node::outputs::NodeOutputs { ids: node.outputs },
+        };
 
-        let inputs = node
-            .get("inputs")
-            .ok_or_eyre(format!("Missing 'inputs' key in node {}", id))?
-            .as_array()
-            .ok_or_eyre(format!("Invalid 'inputs' value in node {}", id))?;
-
-        let outputs = node
-            .get("outputs")
-            .ok_or_eyre(format!("Missing 'outputs' key in node {}", id))?
-            .as_array()
-            .ok_or_eyre(format!("Invalid 'outputs' value in node {}", id))?;
-
-        let mut inputs_vec = Vec::new();
-        for input in inputs {
-            let input = input
-                .as_str()
-                .ok_or_eyre(format!("Invalid 'input' value in node {}", id))?
-                .to_string();
-            inputs_vec.push(input);
-        }
-
-        let mut outputs_vec = Vec::new();
-        for output in outputs {
-            let output = output
-                .as_str()
-                .ok_or_eyre(format!("Invalid 'output' value in node {}", id))?
-                .to_string();
-            outputs_vec.push(output);
-        }
-
-        application.add_node(Node {
-            id,
-            daemon: daemon.clone(),
-            inputs: NodeInputs { ids: inputs_vec },
-            outputs: NodeOutputs { ids: outputs_vec },
-        });
+        application.add_node(node);
     }
 
     Ok(application)

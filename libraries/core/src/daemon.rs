@@ -1,23 +1,25 @@
 use core::fmt;
 use std::path::PathBuf;
 
+use address::DaemonAddress;
+
 pub mod address;
 
-pub type DaemonName = String;
+pub type DaemonLabel = String;
 
 #[derive(Debug, Clone)]
 pub struct Daemon {
-    pub label: DaemonName,
+    pub label: DaemonLabel,
 
-    pub address: address::MachineAddress,
+    pub address: DaemonAddress,
     pub working_dir: PathBuf,
 }
 
 impl Daemon {
-    pub fn new(address: address::MachineAddress, name: String, working_dir: PathBuf) -> Self {
+    pub fn new(address: address::DaemonAddress, label: String, working_dir: PathBuf) -> Self {
         Daemon {
             address,
-            label: name,
+            label,
             working_dir,
         }
     }

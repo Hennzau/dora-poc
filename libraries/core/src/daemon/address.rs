@@ -1,15 +1,15 @@
 use core::fmt;
 
 #[derive(Debug, Clone)]
-pub struct MachineAddress {
+pub struct DaemonAddress {
     pub protocol: String,
     pub address: String,
     pub port: u16,
 }
 
-impl MachineAddress {
+impl DaemonAddress {
     pub fn new(protocol: String, address: String, port: u16) -> Self {
-        MachineAddress {
+        DaemonAddress {
             protocol,
             address,
             port,
@@ -31,7 +31,7 @@ impl MachineAddress {
         let address = parts[0].to_string();
         let port = parts[1].parse::<u16>()?;
 
-        Ok(MachineAddress {
+        Ok(DaemonAddress {
             protocol,
             address,
             port,
@@ -43,7 +43,7 @@ impl MachineAddress {
     }
 }
 
-impl fmt::Display for MachineAddress {
+impl fmt::Display for DaemonAddress {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}/{}:{}", self.protocol, self.address, self.port)
     }

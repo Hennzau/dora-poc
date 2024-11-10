@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    daemon::{Daemon, DaemonName},
+    daemon::{Daemon, DaemonLabel},
     node::{Node, NodeId},
 };
 
@@ -9,15 +9,15 @@ use crate::{
 pub struct Application {
     pub id: String,
 
-    pub daemons: HashMap<DaemonName, Daemon>,
+    pub daemons: HashMap<DaemonLabel, Daemon>,
     pub nodes: HashMap<NodeId, Node>,
 }
 
 #[derive(Debug, Clone)]
 pub struct ApplicationGraph {
     pub id: String,
-    pub daemons: HashMap<DaemonName, Daemon>,
-    pub nodes: HashMap<DaemonName, Vec<Node>>,
+    pub daemons: HashMap<DaemonLabel, Daemon>,
+    pub nodes: HashMap<DaemonLabel, Vec<Node>>,
 }
 
 impl Application {
@@ -45,8 +45,8 @@ impl Application {
         };
 
         for node in self.nodes.values() {
-            let machine_name = node.daemon.label.clone();
-            let nodes = graph.nodes.entry(machine_name).or_insert(vec![]);
+            let daemon_name = node.daemon.label.clone();
+            let nodes = graph.nodes.entry(daemon_name).or_insert(vec![]);
             nodes.push(node.clone());
         }
 

@@ -23,7 +23,7 @@ local = "udp/127.0.0.1:7447"
 working_directory = "/Users/enzolevan/Downloads/talker_listener"
 
 # You can define a remote daemon, all nodes tagged with this remote will be run on this daemon
-[[remote]]
+[[narr.remote]]
 # The name of the remote daemon
 label = "LAPTOP"
 
@@ -34,7 +34,7 @@ endpoint = "udp/10.0.0.3:7447"
 working_directory = "/home/enzo/Downloads/talker_listener"
 
 # This is the list of nodes that compose the application
-[[node]]
+[[narr.node]]
 # The name of the node
 id = "talker"
 
@@ -45,7 +45,7 @@ run = "cargo run -p talker --release"     # The run command of the node, if not 
 inputs = []
 outputs = ["message"]
 
-[[node]]
+[[narr.node]]
 # The name of the node
 id = "listener"
 
@@ -53,8 +53,8 @@ id = "listener"
 remote = "LAPTOP"
 
 build = "cargo build -p listener --release" # The build command of the node, if not specified, nothing will be built before running the node, for remote nodes, the build command will NOT be run on the remote machine
-distribute = "target/release/listener"
-run = "nodes/listener.exe"                  # The run command of the node, if not specified, nothing will be run. It's the command that will be run on the remote machine after
+distribute = "target/release/listener"      # The path to the binary that should be copied to the remote machine
+run = "nodes/listener"                      # The run command of the node, if not specified, nothing will be run. It's the command that will be run on the remote machine after
 
 # Define inputs and outputs of the node
 inputs = ["talker/message"]
