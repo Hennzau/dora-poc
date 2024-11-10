@@ -3,28 +3,28 @@ use std::path::PathBuf;
 
 pub mod address;
 
-pub type MachineName = String;
+pub type DaemonName = String;
 
 #[derive(Debug, Clone)]
-pub struct Machine {
-    pub address: address::MachineAddress,
-    pub name: MachineName,
+pub struct Daemon {
+    pub label: DaemonName,
 
+    pub address: address::MachineAddress,
     pub working_dir: PathBuf,
 }
 
-impl Machine {
+impl Daemon {
     pub fn new(address: address::MachineAddress, name: String, working_dir: PathBuf) -> Self {
-        Machine {
+        Daemon {
             address,
-            name,
+            label: name,
             working_dir,
         }
     }
 }
 
-impl fmt::Display for Machine {
+impl fmt::Display for Daemon {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{} ({})", self.name, self.address)
+        write!(f, "{} ({})", self.label, self.address)
     }
 }

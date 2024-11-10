@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use eyre::OptionExt;
 use narr_core::{
     application::Application,
-    machine::{address::MachineAddress, Machine},
+    daemon::{address::daemonAddress, Daemon},
     node::{inputs::NodeInputs, outputs::NodeOutputs, Node},
 };
 
@@ -25,48 +25,48 @@ pub async fn read_toml_and_parse_to_application(path: PathBuf) -> eyre::Result<A
 
     let mut application = Application::new(format!("{}-{}", name, id));
 
-    let machines = contents_toml
-        .get("machine")
-        .ok_or_eyre(format!("Missing 'machine' key in {:?}", path))?;
+    let daemons = contents_toml
+        .get("daemon")
+        .ok_or_eyre(format!("Missing 'daemon' key in {:?}", path))?;
 
     let nodes = contents_toml
         .get("node")
         .ok_or_eyre(format!("Missing 'node' key in {:?}", path))?;
 
-    for machine in machines
+    for daemon in daemons
         .as_array()
-        .ok_or_eyre(format!("Invalid 'machine' value in {:?}", path))?
+        .ok_or_eyre(format!("Invalid 'daemon' value in {:?}", path))?
     {
-        let name = machine
+        let name = daemon
             .get("name")
-            .ok_or_eyre("Missing 'name' key in machine")?
+            .ok_or_eyre("Missing 'name' key in daemon")?
             .as_str()
-            .ok_or_eyre("Invalid 'name' value in machine")?
+            .ok_or_eyre("Invalid 'name' value in daemon")?
             .to_string();
 
-        let address = machine
+        let address = daemon
             .get("address")
-            .ok_or_eyre(format!("Missing 'address' key in machine {}", name))?
+            .ok_or_eyre(format!("Missing 'address' key in daemon {}", name))?
             .as_str()
-            .ok_or_eyre(format!("Invalid 'address' value in machine {}", name))?;
+            .ok_or_eyre(format!("Invalid 'address' value in daemon {}", name))?;
 
-        let address = MachineAddress::from_string(address.to_string())?;
+        let address = daemonAddress::from_string(address.to_string())?;
 
-        let working_dir = machine
+        let working_dir = daemon
             .get("working_directory")
             .ok_or_eyre(format!(
-                "Missing 'working_directory' key in machine {}",
+                "Missing 'working_directory' key in daemon {}",
                 name
             ))?
             .as_str()
             .ok_or_eyre(format!(
-                "Invalid 'working_directory' value in machine {}",
+                "Invalid 'working_directory' value in daemon {}",
                 name
             ))?;
 
         let working_dir = PathBuf::from(working_dir);
 
-        application.add_machine(Machine::new(address, name, working_dir));
+        application.add_daemon(Daemon::new(address, name, working_dir));
     }
 
     for node in nodes
@@ -80,17 +80,17 @@ pub async fn read_toml_and_parse_to_application(path: PathBuf) -> eyre::Result<A
             .ok_or_eyre("Invalid 'id' value in node")?
             .to_string();
 
-        let machine_name = node
-            .get("machine")
-            .ok_or_eyre(format!("Missing 'machine' key in node {}", id))?
+        let daemon_name = node
+            .get("daemon")
+            .ok_or_eyre(format!("Missing 'daemon' key in node {}", id))?
             .as_str()
-            .ok_or_eyre(format!("Invalid 'machine' value in node {}", id))?
+            .ok_or_eyre(format!("Invalid 'daemon' value in node {}", id))?
             .to_string();
 
-        let machine = application
-            .machines
-            .get(&machine_name)
-            .ok_or_eyre(format!("Machine {} not found", machine_name))?;
+        let daemon = application
+            .daemons
+            .get(&daemon_name)
+            .ok_or_eyre(format!("daemon {} not found", daemon_name))?;
 
         let inputs = node
             .get("inputs")
@@ -124,7 +124,7 @@ pub async fn read_toml_and_parse_to_application(path: PathBuf) -> eyre::Result<A
 
         application.add_node(Node {
             id,
-            machine: machine.clone(),
+            daemon: daemon.clone(),
             inputs: NodeInputs { ids: inputs_vec },
             outputs: NodeOutputs { ids: outputs_vec },
         });

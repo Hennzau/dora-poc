@@ -1,3 +1,3 @@
 pub mod application;
-pub mod machine;
+pub mod daemon;
 pub mod node;

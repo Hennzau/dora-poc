@@ -1,5 +1,6 @@
 use daemon_to_daemon::DaemonToDaemonCommunication;
 use eyre::bail;
+
 use narr_core::application::Application;
 
 pub mod daemon_to_daemon;
@@ -28,7 +29,7 @@ impl Daemon {
         let listen_addresses = vec!["udp/0.0.0.0:0".to_string()];
         let mut connect_addresses = vec![];
 
-        for (label, remote_daemon) in &application.machines {
+        for (label, remote_daemon) in &application.daemons {
             if label == "LOCAL" {
                 continue;
             }
