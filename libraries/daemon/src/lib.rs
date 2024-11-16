@@ -1,81 +1,57 @@
-use daemon_to_daemon::DaemonToDaemonCommunication;
-use eyre::bail;
+use std::sync::Arc;
 
-use narr_core::application::Application;
+use narr_core::daemon::address::DaemonAddress;
+use tokio::sync::mpsc::{self, Sender};
 
-pub mod daemon_to_daemon;
-pub mod event;
-
-pub type ListenAddress = String;
-pub type ConnectAddress = String;
+pub mod handler;
+pub mod queries;
 
 pub struct Daemon {
-    daemon_id: String,
-    application: Option<Application>,
-
-    daemon_to_daemon_com: DaemonToDaemonCommunication,
-
-    event_tx: tokio::sync::mpsc::Sender<event::DaemonEvent>,
-    event_rx: tokio::sync::mpsc::Receiver<event::DaemonEvent>,
+    pub id: String,
+    pub session: Arc<zenoh::Session>,
+    pub abort_tx: Sender<()>,
 }
 
 impl Daemon {
-    pub async fn new_with_application(
-        daemon_id: String,
-        application: Application,
-    ) -> eyre::Result<Self> {
-        let (event_tx, event_rx) = tokio::sync::mpsc::channel(100);
+    pub async fn spawn(
+        id: String,
+        listen: Vec<DaemonAddress>,
+        connect: Vec<DaemonAddress>,
+    ) -> eyre::Result<Daemon> {
+        let mut zenoh_config = zenoh::config::Config::default();
 
-        let listen_addresses = vec!["udp/0.0.0.0:0".to_string()];
-        let mut connect_addresses = vec![];
+        let connect = connect
+            .iter()
+            .map(|address| address.to_string())
+            .collect::<Vec<String>>();
 
-        for (label, remote_daemon) in &application.daemons {
-            if label == "LOCAL" {
-                continue;
-            }
+        let listen = listen
+            .iter()
+            .map(|address| address.to_string())
+            .collect::<Vec<String>>();
 
-            connect_addresses.push(remote_daemon.address.to_string());
+        zenoh_config
+            .insert_json5("connect/endpoints", &serde_json::json!(connect).to_string())
+            .map_err(eyre::Report::msg)?;
+
+        zenoh_config
+            .insert_json5("listen/endpoints", &serde_json::json!(listen).to_string())
+            .map_err(eyre::Report::msg)?;
+
+        let session = Arc::new(zenoh::open(zenoh_config).await.map_err(eyre::Report::msg)?);
+
+        let (abort_tx, abort_rx) = mpsc::channel(8);
+
+        if let Err(e) = handler::spawn_daemon_handler(session.clone(), id.clone(), abort_rx).await {
+            tracing::error!("Fatal error spawning daemon handler: {:?}", e);
         }
 
-        Ok(Daemon {
-            daemon_id,
-            application: Some(application),
-            daemon_to_daemon_com: DaemonToDaemonCommunication::new(
-                listen_addresses,
-                connect_addresses,
-            )
-            .await?,
-            event_tx,
-            event_rx,
-        })
-    }
+        let daemon = Daemon {
+            id,
+            session,
+            abort_tx,
+        };
 
-    pub async fn new_without_application(
-        daemon_id: String,
-        listen_addresses: Vec<ListenAddress>,
-    ) -> eyre::Result<Self> {
-        let (event_tx, event_rx) = tokio::sync::mpsc::channel(100);
-
-        Ok(Daemon {
-            daemon_id,
-            application: None,
-            daemon_to_daemon_com: DaemonToDaemonCommunication::new(listen_addresses, vec![])
-                .await?,
-            event_tx,
-            event_rx,
-        })
-    }
-
-    pub async fn distribute(&self) -> eyre::Result<()> {
-        let application = self
-            .application
-            .as_ref()
-            .ok_or_else(|| eyre::eyre!("No application"))?;
-
-        bail!("Not implemented")
-    }
-
-    pub async fn run(&self) -> eyre::Result<()> {
-        bail!("Not implemented")
+        Ok(daemon)
     }
 }

@@ -31,12 +31,8 @@ eyre = "0.6"
 tracing = "0.1"
 tracing-subscriber = "0.3"
 tokio = { version = "1", features = ["full"] }
-zenoh = { version = "1.0.1", features = [
-    "unstable",
-    "internal",
-    "shared-memory",
-] }
-rkyv = "0.8.8"
+zenoh = { version = "1", features = ["unstable", "internal", "shared-memory"] }
+rkyv = "0.8"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]

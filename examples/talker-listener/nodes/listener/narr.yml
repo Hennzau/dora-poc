@@ -1,0 +1,3 @@
+description: "This node will listen for an input and print it to the console"
+inputs:
+  - in
