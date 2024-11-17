@@ -1,5 +1,5 @@
-use narr_cli::{daemon_check, daemon_list, daemon_spawn};
-use narr_rs::prelude::DaemonAddress;
+use narr_cli::{check::daemon_check, list::daemon_list};
+use narr_rs::prelude::{Daemon, DaemonAddress};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
 
@@ -79,7 +79,7 @@ async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
             EnvFilter::builder()
-                .with_default_directive(LevelFilter::INFO.into())
+                .with_default_directive(LevelFilter::ERROR.into())
                 .parse("")?,
         )
         .init();
@@ -103,7 +103,9 @@ async fn main() -> eyre::Result<()> {
                     .map(|c| DaemonAddress::from_string(c.to_string()))
                     .collect::<Result<Vec<_>, _>>()?;
 
-                daemon_spawn(id, listen, connect).await?;
+                let mut daemon = Daemon::spawn(id, listen, connect).await?;
+
+                daemon.run().await?;
             }
             DaemonCommands::Check { id, connect } => {
                 let connect = DaemonAddress::from_string(connect)?;
