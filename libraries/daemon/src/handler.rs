@@ -1,12 +1,15 @@
 use std::sync::Arc;
 
+use check::handle_check;
 use eyre::OptionExt;
 use tokio::sync::mpsc::Receiver;
 use zenoh::{query::Query, Session};
 
-use crate::queries::{DaemonQuery, DaemonReply};
+use crate::queries::DaemonQuery;
 
-async fn handle_query(query: Query) -> eyre::Result<()> {
+mod check;
+
+async fn handle_query(id: String, query: Query) -> eyre::Result<()> {
     let message = DaemonQuery::from_bytes(
         query
             .payload()
@@ -16,15 +19,7 @@ async fn handle_query(query: Query) -> eyre::Result<()> {
     )?;
 
     match message {
-        DaemonQuery::Check => {
-            if let Err(e) = query
-                .reply(query.key_expr(), DaemonReply::Ok.to_bytes()?.as_slice())
-                .await
-                .map_err(eyre::Report::msg)
-            {
-                tracing::error!("Error replying to query: {:?}", e);
-            }
-        }
+        DaemonQuery::Check => handle_check(id, query).await?,
     }
 
     Ok(())
@@ -35,8 +30,6 @@ pub async fn spawn_daemon_handler(
     id: String,
     mut abort_rx: Receiver<()>,
 ) -> eyre::Result<()> {
-    let daemon_id = id.clone();
-
     let queryable = session
         .declare_queryable(format!("narr/daemon/{}/query", id))
         .await
@@ -47,23 +40,20 @@ pub async fn spawn_daemon_handler(
             tokio::select! {
                 query = queryable.recv_async() => {
                     if let Ok(query) = query {
-                        tracing::info!("Received query: {:?}", query);
-
-                        if let Err(e) = handle_query(query).await {
+                        if let Err(e) = handle_query(id.clone(), query).await {
                             tracing::error!("Error handling query: {}", e)
                         }
                     } else {
                         tracing::error!("Error receiving query");
                     }
                 }
+
                 _ = abort_rx.recv() => {
                     tracing::info!("Received abort signal");
                     break;
                 }
             }
         }
-
-        tracing::info!("Daemon handler for {} stopped", daemon_id);
     });
 
     Ok(())

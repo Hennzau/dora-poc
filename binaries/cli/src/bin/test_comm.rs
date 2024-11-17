@@ -24,6 +24,13 @@ async fn main() -> eyre::Result<()> {
         )
         .map_err(eyre::Report::msg)?;
 
+    zenoh_config
+        .insert_json5(
+            "scouting/multicast/enabled",
+            &serde_json::json!(false).to_string(),
+        )
+        .map_err(eyre::Report::msg)?;
+
     let session = zenoh::open(zenoh_config).await.map_err(eyre::Report::msg)?;
 
     let query = session

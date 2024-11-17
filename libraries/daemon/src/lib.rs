@@ -38,6 +38,13 @@ impl Daemon {
             .insert_json5("listen/endpoints", &serde_json::json!(listen).to_string())
             .map_err(eyre::Report::msg)?;
 
+        zenoh_config
+            .insert_json5(
+                "scouting/multicast/enabled",
+                &serde_json::json!(false).to_string(),
+            )
+            .map_err(eyre::Report::msg)?;
+
         let session = Arc::new(zenoh::open(zenoh_config).await.map_err(eyre::Report::msg)?);
 
         let (abort_tx, abort_rx) = mpsc::channel(8);

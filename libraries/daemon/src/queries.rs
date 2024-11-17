@@ -20,7 +20,8 @@ impl DaemonQuery {
 
 #[derive(Archive, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum DaemonReply {
-    Ok,
+    Ok(String),
+    Test,
 }
 
 impl DaemonReply {
