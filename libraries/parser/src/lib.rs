@@ -78,7 +78,7 @@ impl ApplicationConfig {
     }
 
     // Convert to the original Application struct
-    pub fn to_application(&self) -> eyre::Result<Application> {
+    pub fn into_application(self) -> eyre::Result<Application> {
         // Convert network
         let mut network: Network = HashMap::new();
 
