@@ -1,9 +1,11 @@
+use std::path::PathBuf;
+
 use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub enum DaemonQuery {
     Check,
-    CheckFile(String),
+    CheckFile(PathBuf),
 }
 
 impl DaemonQuery {

@@ -34,14 +34,6 @@ enum Commands {
             required = true
         )]
         file: PathBuf,
-
-        #[arg(
-            value_name = "Connect Address: pass the address
-                of the daemon/router of the network you want to connect to.",
-            required = true,
-            long = "connect"
-        )]
-        connect: String,
     },
 
     #[command(about = "Distribute all files to the daemons.")]
@@ -51,14 +43,6 @@ enum Commands {
             required = true
         )]
         file: PathBuf,
-
-        #[arg(
-            value_name = "Connect Address: pass the address
-                of the daemon/router of the network you want to connect to.",
-            required = true,
-            long = "connect"
-        )]
-        connect: String,
     },
 }
 
@@ -154,15 +138,11 @@ async fn main() -> eyre::Result<()> {
                 daemon_list(connect).await?;
             }
         },
-        Commands::Distribute { file, connect } => {
-            let connect = DaemonAddress::from_string(connect)?;
-
+        Commands::Distribute { file } => {
             // distribute(file, connect).await?;
         }
-        Commands::Validate { file, connect } => {
-            let connect = DaemonAddress::from_string(connect)?;
-
-            daemon_validate(read_and_parse_application(file).await?, connect).await?;
+        Commands::Validate { file } => {
+            daemon_validate(read_and_parse_application(file).await?).await?;
         }
     }
 

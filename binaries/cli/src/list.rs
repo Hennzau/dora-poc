@@ -4,7 +4,7 @@ use narr_rs::prelude::{DaemonAddress, DaemonQuery, DaemonReply};
 use crate::create_cli_session;
 
 pub async fn daemon_list(connect: DaemonAddress) -> eyre::Result<()> {
-    let session = create_cli_session(connect).await?;
+    let session = create_cli_session(vec![connect]).await?;
 
     let query = session
         .get("narr/daemon/*/query")

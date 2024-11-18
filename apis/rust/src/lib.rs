@@ -1,5 +1,5 @@
 pub mod prelude {
-    pub use narr_core::{address::DaemonAddress, Application};
+    pub use narr_core::{address::DaemonAddress, Application, DaemonLabel};
     pub use narr_daemon::{
         queries::{DaemonQuery, DaemonReply, DataFlowQuery, DataFlowReply},
         Daemon,

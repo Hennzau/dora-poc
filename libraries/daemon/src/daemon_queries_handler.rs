@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use check::handle_check;
+use check::{handle_check, handle_check_file};
 use eyre::OptionExt;
 use tokio::sync::mpsc::Receiver;
 use zenoh::{query::Query, Session};
@@ -9,7 +9,7 @@ use crate::{queries::DaemonQuery, DaemonInfo};
 
 mod check;
 
-async fn handle_query(info: DaemonInfo, session: Arc<Session>, query: Query) -> eyre::Result<()> {
+async fn handle_query(info: DaemonInfo, _session: Arc<Session>, query: Query) -> eyre::Result<()> {
     let message = DaemonQuery::from_bytes(
         query
             .payload()
@@ -19,8 +19,8 @@ async fn handle_query(info: DaemonInfo, session: Arc<Session>, query: Query) -> 
     )?;
 
     match message {
-        DaemonQuery::Check => handle_check(info, session, query).await?,
-        DaemonQuery::CheckFile(path) => {}
+        DaemonQuery::Check => handle_check(info, query).await?,
+        DaemonQuery::CheckFile(path) => handle_check_file(info, path, query).await?,
     }
 
     Ok(())
