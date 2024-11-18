@@ -8,7 +8,7 @@ pub async fn daemon_list(connect: DaemonAddress) -> eyre::Result<()> {
 
     let query = session
         .get("narr/daemon/*/query")
-        .payload(DaemonQuery::Check.to_bytes()?.as_ref())
+        .payload(DaemonQuery::Check.to_bytes()?)
         .await
         .map_err(eyre::Report::msg)?;
 

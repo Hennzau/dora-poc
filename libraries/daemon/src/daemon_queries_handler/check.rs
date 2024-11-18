@@ -21,9 +21,7 @@ pub async fn handle_check(
     if let Err(e) = query
         .reply(
             format!("narr/daemon/{}/query", info.id),
-            DaemonReply::Ok(crate::queries::InfoReply { id, reachable })
-                .to_bytes()?
-                .as_ref(),
+            DaemonReply::Ok(crate::queries::InfoReply { id, reachable }).to_bytes()?,
         )
         .await
         .map_err(eyre::Report::msg)

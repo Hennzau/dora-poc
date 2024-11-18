@@ -16,9 +16,9 @@ resolver = "2"
 version = "0.1.0"
 description = "The Narr project is a declarative framework for creating and distributing applications that are made of nodes that communicate with each other."
 edition = "2021"
-documentation = "https://hennzau.github.io/narr"
+documentation = "https://narr-rs.github.io/narr"
 license = "Apache-2.0"
-repository = "https://github.com/Hennzau/narr"
+repository = "https://github.com/narr-rs/narr"
 
 [workspace.dependencies]
 narr-daemon = { path = "libraries/daemon" }
@@ -32,8 +32,9 @@ tracing = "0.1"
 tracing-subscriber = "0.3"
 tokio = { version = "1", features = ["full"] }
 zenoh = { version = "1", features = ["unstable", "internal", "shared-memory"] }
-rkyv = "0.8"
 serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+bincode = "1.3"
 
 # Config for 'cargo dist'
 [workspace.metadata.dist]
