@@ -20,6 +20,7 @@ async fn handle_query(info: DaemonInfo, session: Arc<Session>, query: Query) -> 
 
     match message {
         DaemonQuery::Check => handle_check(info, session, query).await?,
+        DaemonQuery::CheckFile(path) => {}
     }
 
     Ok(())

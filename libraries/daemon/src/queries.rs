@@ -3,6 +3,7 @@ use rkyv::{util::AlignedVec, Archive, Deserialize, Serialize};
 #[derive(Archive, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum DaemonQuery {
     Check,
+    CheckFile(String),
 }
 
 impl DaemonQuery {
@@ -27,7 +28,8 @@ pub struct InfoReply {
 #[derive(Archive, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum DaemonReply {
     Ok(InfoReply),
-    Test,
+    FileOk,
+    FileNotFound,
 }
 
 impl DaemonReply {

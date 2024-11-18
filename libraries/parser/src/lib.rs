@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct ApplicationConfig {
+struct ApplicationConfig {
     pub application: String,
     pub network: HashMap<String, String>,
     pub vars: Option<HashMap<String, String>>,
@@ -15,7 +15,7 @@ pub struct ApplicationConfig {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct NodeConfig {
+struct NodeConfig {
     pub id: String,
     #[serde(default)]
     pub files: HashMap<String, String>,
@@ -28,7 +28,7 @@ pub struct NodeConfig {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct FileConfig {
+struct FileConfig {
     #[serde(flatten)]
     pub mapping: HashMap<String, String>,
 }
@@ -139,4 +139,16 @@ impl ApplicationConfig {
             distributed,
         })
     }
+}
+
+pub async fn parse_application(application: String) -> eyre::Result<Application> {
+    let config = ApplicationConfig::parse_yaml(&application)?;
+
+    config.into_application()
+}
+
+pub async fn read_and_parse_application(file_path: PathBuf) -> eyre::Result<Application> {
+    let file_content = tokio::fs::read_to_string(file_path.clone()).await?;
+
+    parse_application(file_content).await
 }
