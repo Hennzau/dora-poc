@@ -19,8 +19,14 @@ impl DaemonQuery {
 }
 
 #[derive(Archive, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct InfoReply {
+    pub id: String,
+    pub reachable: String,
+}
+
+#[derive(Archive, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub enum DaemonReply {
-    Ok(String, String),
+    Ok(InfoReply),
     Test,
 }
 

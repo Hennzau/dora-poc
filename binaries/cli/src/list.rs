@@ -21,8 +21,8 @@ pub async fn daemon_list(connect: DaemonAddress) -> eyre::Result<()> {
             Ok(reply) => {
                 if let Ok(reply) = DaemonReply::from_bytes(&reply.payload().to_bytes().into_owned())
                 {
-                    if let DaemonReply::Ok(id, reachable) = reply {
-                        table.add_row(vec![id.clone(), reachable]);
+                    if let DaemonReply::Ok(info) = reply {
+                        table.add_row(vec![info.id, info.reachable]);
                     } else {
                         tracing::error!("Received unexpected reply: {:?}", reply);
                     }

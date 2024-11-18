@@ -1,0 +1,30 @@
+application: talker-listener
+
+network:
+  LOCAL_1: udp/127.0.0.1:7447
+  LOCAL_2: udp/127.0.0.1:7446
+
+vars:
+  LOCAL_1_DIR: /home/enzo/Documents/narr/examples/talker-listener
+
+nodes:
+  - id: talker
+    files:
+      - LOCAL_1:{{LOCAL_1_DIR}}/target/release/talker
+    start: ./talker/talker
+    outputs:
+      - out
+
+  - id: listener
+    files:
+      - LOCAL_1:{{LOCAL_1_DIR}}/target/release/listener
+    start: ./listener/listener
+    inputs:
+      - in
+
+flows:
+  listener/in: talker/out
+
+distributed:
+  talker: LOCAL_1
+  listener: LOCAL_2

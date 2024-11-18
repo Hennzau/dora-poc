@@ -16,8 +16,8 @@ pub async fn daemon_check(id: String, connect: DaemonAddress) -> eyre::Result<()
             Ok(reply) => {
                 if let Ok(reply) = DaemonReply::from_bytes(&reply.payload().to_bytes().into_owned())
                 {
-                    if let DaemonReply::Ok(id, _) = reply {
-                        println!("{}: OK", id);
+                    if let DaemonReply::Ok(info) = reply {
+                        println!("{}: OK", info.id);
                     } else {
                         tracing::error!("Received unexpected reply: {:?}", reply);
                     }

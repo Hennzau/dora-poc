@@ -6,17 +6,24 @@ use crate::{queries::DaemonReply, DaemonInfo};
 
 pub async fn handle_check(
     info: DaemonInfo,
-    session: Arc<Session>,
+    _session: Arc<Session>,
     query: Query,
 ) -> eyre::Result<()> {
-    let zid = session.zid().to_string();
+    let listen = info
+        .listen
+        .iter()
+        .map(|address| address.to_string())
+        .collect::<Vec<String>>();
 
-    let reachable = format!("{:?}", info.listen);
+    let reachable = format!("{:?}", listen);
+    let id = info.id.clone();
 
     if let Err(e) = query
         .reply(
             format!("narr/daemon/{}/query", info.id),
-            DaemonReply::Ok(info.id, reachable).to_bytes()?.as_ref(),
+            DaemonReply::Ok(crate::queries::InfoReply { id, reachable })
+                .to_bytes()?
+                .as_ref(),
         )
         .await
         .map_err(eyre::Report::msg)

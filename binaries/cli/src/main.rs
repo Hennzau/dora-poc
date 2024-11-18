@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use narr_cli::{check::daemon_check, list::daemon_list};
 use narr_rs::prelude::{Daemon, DaemonAddress};
 use tracing::level_filters::LevelFilter;
@@ -72,6 +74,23 @@ enum DaemonCommands {
         )]
         connect: String,
     },
+
+    #[command(about = "Distribute all files to the daemons.")]
+    Distribute {
+        #[arg(
+            value_name = "File Path: pass the path of the dataflow description.",
+            required = true
+        )]
+        file: PathBuf,
+
+        #[arg(
+            value_name = "Connect Address: pass the address
+            of the daemon/router of the network you want to connect to.",
+            required = true,
+            long = "connect"
+        )]
+        connect: String,
+    },
 }
 
 #[tokio::main]
@@ -116,6 +135,11 @@ async fn main() -> eyre::Result<()> {
                 let connect = DaemonAddress::from_string(connect)?;
 
                 daemon_list(connect).await?;
+            }
+            DaemonCommands::Distribute { file, connect } => {
+                let connect = DaemonAddress::from_string(connect)?;
+
+                // distribute(file, connect).await?;
             }
         },
     }

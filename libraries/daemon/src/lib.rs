@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use narr_core::daemon::address::DaemonAddress;
+use narr_core::address::DaemonAddress;
 use tokio::sync::mpsc;
 
 pub mod daemon_queries_handler;
@@ -8,9 +8,10 @@ pub mod dataflow_queries_handler;
 pub mod queries;
 
 #[derive(Debug, Clone)]
-struct DaemonInfo {
+pub struct DaemonInfo {
     id: String,
     listen: Vec<DaemonAddress>,
+    #[allow(dead_code)]
     connect: Vec<DaemonAddress>,
 }
 
