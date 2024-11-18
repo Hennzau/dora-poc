@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
-use narr_cli::{check::daemon_check, list::daemon_list};
-use narr_rs::prelude::{Daemon, DaemonAddress};
+use narr_cli::{check::daemon_check, list::daemon_list, validate::daemon_validate};
+use narr_rs::prelude::{read_and_parse_application, Daemon, DaemonAddress};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
 
@@ -25,6 +25,40 @@ enum Commands {
     Daemon {
         #[command(subcommand)]
         command: DaemonCommands,
+    },
+
+    #[command(about = "Validate the dataflow description.")]
+    Validate {
+        #[arg(
+            value_name = "File Path: pass the path of the dataflow description.",
+            required = true
+        )]
+        file: PathBuf,
+
+        #[arg(
+            value_name = "Connect Address: pass the address
+                of the daemon/router of the network you want to connect to.",
+            required = true,
+            long = "connect"
+        )]
+        connect: String,
+    },
+
+    #[command(about = "Distribute all files to the daemons.")]
+    Distribute {
+        #[arg(
+            value_name = "File Path: pass the path of the dataflow description.",
+            required = true
+        )]
+        file: PathBuf,
+
+        #[arg(
+            value_name = "Connect Address: pass the address
+                of the daemon/router of the network you want to connect to.",
+            required = true,
+            long = "connect"
+        )]
+        connect: String,
     },
 }
 
@@ -69,23 +103,6 @@ enum DaemonCommands {
     List {
         #[arg(
             value_name = "Connect Address: pass the address of the daemon/router of the network you want to connect to.",
-            required = true,
-            long = "connect"
-        )]
-        connect: String,
-    },
-
-    #[command(about = "Distribute all files to the daemons.")]
-    Distribute {
-        #[arg(
-            value_name = "File Path: pass the path of the dataflow description.",
-            required = true
-        )]
-        file: PathBuf,
-
-        #[arg(
-            value_name = "Connect Address: pass the address
-            of the daemon/router of the network you want to connect to.",
             required = true,
             long = "connect"
         )]
@@ -136,12 +153,17 @@ async fn main() -> eyre::Result<()> {
 
                 daemon_list(connect).await?;
             }
-            DaemonCommands::Distribute { file, connect } => {
-                let connect = DaemonAddress::from_string(connect)?;
-
-                // distribute(file, connect).await?;
-            }
         },
+        Commands::Distribute { file, connect } => {
+            let connect = DaemonAddress::from_string(connect)?;
+
+            // distribute(file, connect).await?;
+        }
+        Commands::Validate { file, connect } => {
+            let connect = DaemonAddress::from_string(connect)?;
+
+            daemon_validate(read_and_parse_application(file).await?, connect).await?;
+        }
     }
 
     Ok(())

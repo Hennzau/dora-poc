@@ -3,7 +3,9 @@ use std::sync::Arc;
 use narr_rs::prelude::DaemonAddress;
 
 pub mod check;
+pub mod distribute;
 pub mod list;
+pub mod validate;
 
 async fn create_cli_session(connect: DaemonAddress) -> eyre::Result<Arc<zenoh::Session>> {
     let mut zenoh_config = zenoh::Config::default();
