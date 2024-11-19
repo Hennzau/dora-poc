@@ -38,5 +38,5 @@ pub struct Application {
 
     pub flows: Flows,
 
-    pub distributed: Distribution,
+    pub distribution: Distribution,
 }

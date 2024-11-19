@@ -11,7 +11,7 @@ struct ApplicationConfig {
     pub vars: Option<HashMap<String, String>>,
     pub nodes: Vec<NodeConfig>,
     pub flows: HashMap<String, String>,
-    pub distributed: HashMap<String, String>,
+    pub distribution: HashMap<String, String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
@@ -128,15 +128,15 @@ impl ApplicationConfig {
             })
             .collect();
 
-        // Convert distribution
-        let distributed: Distribution = self.distributed.clone();
+        let id = self.application.clone();
+        let distribution: Distribution = self.distribution.clone();
 
         Ok(Application {
-            id: self.application.clone(),
+            id,
             network,
             nodes,
             flows,
-            distributed,
+            distribution,
         })
     }
 }

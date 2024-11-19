@@ -25,6 +25,6 @@ nodes:
 flows:
   listener/in: talker/out
 
-distributed:
+distribution:
   talker: LOCAL_1
   listener: LOCAL_2

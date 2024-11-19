@@ -91,7 +91,7 @@ async fn ensure_distribution(application: &Application) -> eyre::Result<()> {
     let available_daemons = application.network.keys().cloned().collect::<Vec<_>>();
     let available_nodes = application.nodes.keys().cloned().collect::<Vec<_>>();
 
-    for (node, daemon) in &application.distributed {
+    for (node, daemon) in &application.distribution {
         if !available_nodes.contains(node) {
             return Err(eyre::eyre!(
                 "Node {} is not defined so it cannot be present in 'distributed' section",
@@ -107,7 +107,7 @@ async fn ensure_distribution(application: &Application) -> eyre::Result<()> {
     }
 
     for node in &available_nodes {
-        if !application.distributed.contains_key(node) {
+        if !application.distribution.contains_key(node) {
             return Err(eyre::eyre!(
                 "Node {} is not parameterized in the 'distributed' section",
                 node
