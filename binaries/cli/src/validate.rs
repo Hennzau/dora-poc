@@ -19,8 +19,7 @@ async fn ensure_daemons(session: Arc<Session>, application: &Application) -> eyr
     while let Ok(reply) = query.recv_async().await {
         match reply.result() {
             Ok(reply) => {
-                if let Ok(reply) = DaemonReply::from_bytes(&reply.payload().to_bytes())
-                {
+                if let Ok(reply) = DaemonReply::from_bytes(&reply.payload().to_bytes()) {
                     if let DaemonReply::Ok(info) = reply {
                         reachable_daemons.push(info.id);
                     } else {
@@ -63,9 +62,7 @@ async fn ensure_files(session: Arc<Session>, application: &Application) -> eyre:
         while let Ok(reply) = query.recv_async().await {
             match reply.result() {
                 Ok(reply) => {
-                    if let Ok(reply) =
-                        DaemonReply::from_bytes(&reply.payload().to_bytes())
-                    {
+                    if let Ok(reply) = DaemonReply::from_bytes(&reply.payload().to_bytes()) {
                         if let DaemonReply::FileNotFound = reply {
                             return Err(eyre::eyre!(
                                 "File {:?} not found on daemon {}",

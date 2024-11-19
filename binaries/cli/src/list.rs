@@ -19,8 +19,7 @@ pub async fn daemon_list(connect: DaemonAddress) -> eyre::Result<()> {
     while let Ok(reply) = query.recv_async().await {
         match reply.result() {
             Ok(reply) => {
-                if let Ok(reply) = DaemonReply::from_bytes(&reply.payload().to_bytes())
-                {
+                if let Ok(reply) = DaemonReply::from_bytes(&reply.payload().to_bytes()) {
                     if let DaemonReply::Ok(info) = reply {
                         table.add_row(vec![info.id, info.reachable]);
                     } else {
