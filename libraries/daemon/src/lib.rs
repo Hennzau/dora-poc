@@ -3,6 +3,7 @@ use std::sync::Arc;
 use narr_core::address::DaemonAddress;
 use tokio::sync::mpsc;
 
+pub mod daemon_files_handler;
 pub mod daemon_queries_handler;
 pub mod dataflow_queries_handler;
 pub mod queries;
@@ -68,13 +69,23 @@ impl Daemon {
     }
 
     pub async fn run(&mut self) -> eyre::Result<()> {
-        let (abort_tx, abort_rx) = mpsc::channel(8);
+        let (abort_tx_queries, abort_rx_queries) = mpsc::channel(8);
 
         if let Err(e) =
-            daemon_queries_handler::spawn(self.session.clone(), self.info.clone(), abort_rx).await
+            daemon_queries_handler::spawn(self.session.clone(), self.info.clone(), abort_rx_queries)
+                .await
         {
             tracing::error!("Fatal error spawning daemon handler: {:?}", e);
         }
+
+        let (abort_tx_files, abort_rx_files) = mpsc::channel(8);
+
+        // if let Err(e) =
+        //     daemon_files_handler::spawn(self.session.clone(), self.info.clone(), abort_rx_files)
+        //         .await
+        // {
+        //     tracing::error!("Fatal error spawning daemon handler: {:?}", e);
+        // }
 
         let queryable = self
             .session
@@ -95,7 +106,11 @@ impl Daemon {
                 _ = tokio::signal::ctrl_c() => {
                     tracing::info!("Received abort signal");
 
-                    if let Err(e) = abort_tx.send(()).await {
+                    if let Err(e) = abort_tx_queries.send(()).await {
+                        tracing::error!("Error sending abort signal: {:?}", e);
+                    }
+
+                    if let Err(e) = abort_tx_files.send(()).await {
                         tracing::error!("Error sending abort signal: {:?}", e);
                     }
 

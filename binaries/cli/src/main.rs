@@ -1,6 +1,9 @@
 use std::path::PathBuf;
 
-use narr_cli::{check::daemon_check, list::daemon_list, validate::daemon_validate};
+use narr_cli::{
+    check::daemon_check, distribute::daemon_distribute, list::daemon_list,
+    validate::daemon_validate,
+};
 use narr_rs::prelude::{read_and_parse_application, Daemon, DaemonAddress};
 use tracing::level_filters::LevelFilter;
 use tracing_subscriber::EnvFilter;
@@ -98,7 +101,7 @@ async fn main() -> eyre::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
             EnvFilter::builder()
-                .with_default_directive(LevelFilter::ERROR.into())
+                .with_default_directive(LevelFilter::INFO.into())
                 .parse("")?,
         )
         .init();
@@ -138,8 +141,7 @@ async fn main() -> eyre::Result<()> {
             }
         },
         Commands::Distribute { file } => {
-            let _ = file;
-            // distribute(file, connect).await?;
+            daemon_distribute(read_and_parse_application(file).await?).await?;
         }
         Commands::Validate { file } => {
             daemon_validate(read_and_parse_application(file).await?).await?;
