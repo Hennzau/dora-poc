@@ -4,6 +4,7 @@ use check::{handle_check, handle_check_file};
 use eyre::OptionExt;
 use files::handle_send_file;
 use tokio::sync::mpsc::Receiver;
+use tokio::task::JoinHandle;
 use zenoh::shm::{ShmProvider, StaticProtocolID};
 use zenoh::{query::Query, Session};
 
@@ -19,7 +20,7 @@ mod files;
 
 async fn handle_query(
     info: DaemonInfo,
-    _session: Arc<Session>,
+    session: Arc<Session>,
     query: Query,
     provider: &ShmProvider<StaticProtocolID<0>, PosixShmProviderBackend>,
 ) -> eyre::Result<()> {
@@ -34,7 +35,9 @@ async fn handle_query(
     match message {
         DaemonQuery::Check => handle_check(info, query).await?,
         DaemonQuery::CheckFile(path) => handle_check_file(info, path, query).await?,
-        DaemonQuery::File(path) => handle_send_file(info, path, query, provider).await?,
+        DaemonQuery::SendFile(daemon, path, new_name) => {
+            handle_send_file(info, session, daemon, path, new_name, query, provider).await?
+        }
     }
 
     Ok(())
@@ -45,7 +48,7 @@ pub async fn spawn(
     info: DaemonInfo,
 
     mut abort_rx: Receiver<()>,
-) -> eyre::Result<()> {
+) -> eyre::Result<JoinHandle<()>> {
     let queryable = session
         .declare_queryable(format!("narr/daemon/{}/query", info.id))
         .await
@@ -62,26 +65,23 @@ pub async fn spawn(
         .backend(backend)
         .wait();
 
-    tokio::task::spawn(async move {
+    Ok(tokio::task::spawn(async move {
         loop {
             tokio::select! {
                 query = queryable.recv_async() => {
                     if let Ok(query) = query {
                         if let Err(e) = handle_query(info.clone(), session.clone(), query, &provider).await {
-                            tracing::error!("Error handling query: {}", e)
+                            tracing::error!("Error handling query: {}", e);
                         }
-                    } else {
-                        tracing::error!("Error receiving query");
+                    } else if let Err(error) = query {
+                        tracing::error!("Error receiving query: {}", error);
                     }
                 }
-
                 _ = abort_rx.recv() => {
                     tracing::info!("Received abort signal");
                     break;
                 }
             }
         }
-    });
-
-    Ok(())
+    }))
 }

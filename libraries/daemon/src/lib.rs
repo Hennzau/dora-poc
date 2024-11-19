@@ -1,11 +1,10 @@
 use std::sync::Arc;
 
+use handler::{files_handler, queries_handler};
 use narr_core::address::DaemonAddress;
-use tokio::sync::mpsc;
+use tokio::{signal::ctrl_c, sync::mpsc};
 
-pub mod daemon_files_handler;
-pub mod daemon_queries_handler;
-pub mod dataflow_queries_handler;
+pub mod handler;
 pub mod queries;
 
 #[derive(Debug, Clone)]
@@ -69,55 +68,23 @@ impl Daemon {
     }
 
     pub async fn run(&mut self) -> eyre::Result<()> {
-        let (abort_tx_queries, abort_rx_queries) = mpsc::channel(8);
+        let (abort_tx_queries, abort_rx_queries) = mpsc::channel(1);
+        let (abort_tx_files, abort_rx_files) = mpsc::channel(1);
 
-        if let Err(e) =
-            daemon_queries_handler::spawn(self.session.clone(), self.info.clone(), abort_rx_queries)
-                .await
-        {
-            tracing::error!("Fatal error spawning daemon handler: {:?}", e);
-        }
+        let queries_handler =
+            queries_handler::spawn(self.session.clone(), self.info.clone(), abort_rx_queries)
+                .await?;
 
-        let (abort_tx_files, abort_rx_files) = mpsc::channel(8);
+        let files_handler =
+            files_handler::spawn(self.session.clone(), self.info.clone(), abort_rx_files).await?;
 
-        // if let Err(e) =
-        //     daemon_files_handler::spawn(self.session.clone(), self.info.clone(), abort_rx_files)
-        //         .await
-        // {
-        //     tracing::error!("Fatal error spawning daemon handler: {:?}", e);
-        // }
+        ctrl_c().await?;
 
-        let queryable = self
-            .session
-            .declare_queryable(format!("narr/daemon/{}/dataflow", self.info.id))
-            .await
-            .map_err(eyre::Report::msg)?;
+        abort_tx_queries.send(()).await?;
+        abort_tx_files.send(()).await?;
 
-        loop {
-            tokio::select! {
-                query = queryable.recv_async() => {
-                    if let Ok(query) = query {
-                        dataflow_queries_handler::handle_query(self, query).await?;
-                    } else {
-                        tracing::error!("Error receiving query");
-                    }
-                }
-
-                _ = tokio::signal::ctrl_c() => {
-                    tracing::info!("Received abort signal");
-
-                    if let Err(e) = abort_tx_queries.send(()).await {
-                        tracing::error!("Error sending abort signal: {:?}", e);
-                    }
-
-                    if let Err(e) = abort_tx_files.send(()).await {
-                        tracing::error!("Error sending abort signal: {:?}", e);
-                    }
-
-                    break;
-                }
-            }
-        }
+        queries_handler.await?;
+        files_handler.await?;
 
         Ok(())
     }

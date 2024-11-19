@@ -5,7 +5,7 @@ network:
   LOCAL_2: udp/127.0.0.1:7446
 
 vars:
-  LOCAL_1_DIR: /home/enzo/Documents/narr/examples/talker-listener
+  LOCAL_1_DIR: /Users/enzolevan/Offline/narr/examples/talker-listener
 
 nodes:
   - id: talker

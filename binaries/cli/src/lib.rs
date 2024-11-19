@@ -21,6 +21,13 @@ async fn create_cli_session(connect: Vec<DaemonAddress>) -> eyre::Result<Arc<zen
 
     zenoh_config
         .insert_json5(
+            "listen/endpoints",
+            &serde_json::json!(Vec::<String>::new()).to_string(),
+        )
+        .map_err(eyre::Report::msg)?;
+
+    zenoh_config
+        .insert_json5(
             "scouting/multicast/enabled",
             &serde_json::json!(false).to_string(),
         )

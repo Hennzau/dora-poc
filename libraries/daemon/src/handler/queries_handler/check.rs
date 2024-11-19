@@ -14,16 +14,13 @@ pub async fn handle_check(info: DaemonInfo, query: Query) -> eyre::Result<()> {
     let reachable = format!("{:?}", listen);
     let id = info.id.clone();
 
-    if let Err(e) = query
+    query
         .reply(
             format!("narr/daemon/{}/query", info.id),
             DaemonReply::Ok(crate::queries::InfoReply { id, reachable }).to_bytes()?,
         )
         .await
-        .map_err(eyre::Report::msg)
-    {
-        tracing::error!("Error replying to query: {:?}", e);
-    }
+        .map_err(eyre::Report::msg)?;
 
     Ok(())
 }
@@ -34,13 +31,10 @@ pub async fn handle_check_file(info: DaemonInfo, file: PathBuf, query: Query) ->
         false => DaemonReply::FileNotFound,
     };
 
-    if let Err(e) = query
+    query
         .reply(format!("narr/daemon/{}/query", info.id), reply.to_bytes()?)
         .await
-        .map_err(eyre::Report::msg)
-    {
-        tracing::error!("Error replying to query: {:?}", e);
-    }
+        .map_err(eyre::Report::msg)?;
 
     Ok(())
 }
