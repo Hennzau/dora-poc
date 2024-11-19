@@ -14,7 +14,7 @@ pub async fn daemon_check(id: String, connect: DaemonAddress) -> eyre::Result<()
     while let Ok(reply) = query.recv_async().await {
         match reply.result() {
             Ok(reply) => {
-                if let Ok(reply) = DaemonReply::from_bytes(&reply.payload().to_bytes().into_owned())
+                if let Ok(reply) = DaemonReply::from_bytes(&reply.payload().to_bytes())
                 {
                     if let DaemonReply::Ok(info) = reply {
                         println!("{}: OK", info.id);

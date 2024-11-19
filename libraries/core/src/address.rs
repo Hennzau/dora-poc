@@ -37,10 +37,6 @@ impl DaemonAddress {
             port,
         })
     }
-
-    pub fn to_string(&self) -> String {
-        format!("{}/{}:{}", self.protocol, self.address, self.port)
-    }
 }
 
 impl fmt::Display for DaemonAddress {

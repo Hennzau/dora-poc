@@ -13,8 +13,7 @@ use clap::{Parser, Subcommand};
     version = env!("CARGO_PKG_VERSION"),
     about = env!("CARGO_PKG_DESCRIPTION"),
 )]
-
-struct CLI {
+struct Cli {
     #[command(subcommand)]
     command: Commands,
 }
@@ -104,7 +103,7 @@ async fn main() -> eyre::Result<()> {
         )
         .init();
 
-    let cli = CLI::parse();
+    let cli = Cli::parse();
 
     match cli.command {
         Commands::Daemon { command } => match command {
@@ -139,6 +138,7 @@ async fn main() -> eyre::Result<()> {
             }
         },
         Commands::Distribute { file } => {
+            let _ = file;
             // distribute(file, connect).await?;
         }
         Commands::Validate { file } => {

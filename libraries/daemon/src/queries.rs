@@ -14,7 +14,7 @@ impl DaemonQuery {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> eyre::Result<DaemonQuery> {
-        bincode::deserialize(&bytes).map_err(eyre::Report::msg)
+        bincode::deserialize(bytes).map_err(eyre::Report::msg)
     }
 }
 
@@ -37,7 +37,7 @@ impl DaemonReply {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> eyre::Result<DaemonReply> {
-        bincode::deserialize(&bytes).map_err(eyre::Report::msg)
+        bincode::deserialize(bytes).map_err(eyre::Report::msg)
     }
 }
 
@@ -52,7 +52,7 @@ impl DataFlowQuery {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> eyre::Result<DataFlowQuery> {
-        bincode::deserialize(&bytes).map_err(eyre::Report::msg)
+        bincode::deserialize(bytes).map_err(eyre::Report::msg)
     }
 }
 
@@ -67,6 +67,6 @@ impl DataFlowReply {
     }
 
     pub fn from_bytes(bytes: &[u8]) -> eyre::Result<DataFlowReply> {
-        bincode::deserialize(&bytes).map_err(eyre::Report::msg)
+        bincode::deserialize(bytes).map_err(eyre::Report::msg)
     }
 }

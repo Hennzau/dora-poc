@@ -19,7 +19,7 @@ async fn ensure_daemons(session: Arc<Session>, application: &Application) -> eyr
     while let Ok(reply) = query.recv_async().await {
         match reply.result() {
             Ok(reply) => {
-                if let Ok(reply) = DaemonReply::from_bytes(&reply.payload().to_bytes().into_owned())
+                if let Ok(reply) = DaemonReply::from_bytes(&reply.payload().to_bytes())
                 {
                     if let DaemonReply::Ok(info) = reply {
                         reachable_daemons.push(info.id);
@@ -47,7 +47,7 @@ async fn ensure_daemons(session: Arc<Session>, application: &Application) -> eyr
 
 async fn ensure_files(session: Arc<Session>, application: &Application) -> eyre::Result<()> {
     let mut files = HashMap::new();
-    for (_, node) in &application.nodes {
+    for node in application.nodes.values() {
         for (daemon, file) in &node.files {
             files.insert(daemon.clone(), PathBuf::from(file));
         }
@@ -64,7 +64,7 @@ async fn ensure_files(session: Arc<Session>, application: &Application) -> eyre:
             match reply.result() {
                 Ok(reply) => {
                     if let Ok(reply) =
-                        DaemonReply::from_bytes(&reply.payload().to_bytes().into_owned())
+                        DaemonReply::from_bytes(&reply.payload().to_bytes())
                     {
                         if let DaemonReply::FileNotFound = reply {
                             return Err(eyre::eyre!(
