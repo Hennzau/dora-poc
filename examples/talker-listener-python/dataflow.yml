@@ -10,14 +10,14 @@ vars:
 nodes:
   - id: talker
     files:
-      - LOCAL_1:{{LOCAL_1_DIR}}/nodes/talker/talker.py
+      LOCAL_1: "{{LOCAL_1_DIR}}/nodes/talker/talker.py"
     start: uv run talker/talker.py
     outputs:
       - out
 
   - id: listener
     files:
-      - LOCAL_1:{{LOCAL_1_DIR}}/nodes/listener/listener.py
+      LOCAL_1: "{{LOCAL_1_DIR}}/nodes/listener/listener.py"
     start: uv run listener/listener.py
     inputs:
       - in
@@ -25,6 +25,6 @@ nodes:
 flows:
   listener/in: talker/out
 
-distributed:
+distribution:
   talker: LOCAL_1
   listener: LOCAL_2
