@@ -106,8 +106,6 @@ async fn ensure_distribution(application: &Application) -> eyre::Result<()> {
         }
     }
 
-    // Make sure all nodes are in the distributed section
-
     for node in &available_nodes {
         if !application.distributed.contains_key(node) {
             return Err(eyre::eyre!(
@@ -138,6 +136,22 @@ async fn ensure_flows(application: &Application) -> eyre::Result<()> {
                 output_node
             ));
         }
+
+        if !application.nodes[input_node].inputs.contains(input_id) {
+            return Err(eyre::eyre!(
+                "Input {} is not defined in node {}",
+                input_id,
+                input_node
+            ));
+        }
+
+        if !application.nodes[output_node].outputs.contains(output_id) {
+            return Err(eyre::eyre!(
+                "Output {} is not defined in node {}",
+                output_id,
+                output_node
+            ));
+        }
     }
 
     Ok(())
@@ -154,7 +168,7 @@ pub async fn daemon_validate(application: Application) -> eyre::Result<()> {
     ensure_distribution(&application).await?;
     ensure_flows(&application).await?;
 
-    println!("Application is valid");
+    println!("`{}` is valid", application.id);
 
     Ok(())
 }
